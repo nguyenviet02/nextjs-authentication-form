@@ -1,6 +1,9 @@
 'use client';
+import { signIn } from '@/services/auth';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 const UserIcon = () => (
   <svg
@@ -88,9 +91,31 @@ const XIcon = () => (
 
 // --- Main App Component ---
 export default function Login() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    toast.loading('Signing in...');
+    try {
+      const res = await signIn(email, password);
+      if (!res.success) {
+        toast.dismiss();
+        toast.error(res.message);
+        return;
+      }
+      localStorage.setItem('access_token', res.data.accessToken);
+      toast.dismiss();
+      toast.success('Sign in successful');
+      router.push('/');
+    } catch (error) {
+      console.error(error);
+      toast.dismiss();
+      toast.error(error as string);
+    }
+  };
 
   return (
     // Main container with a custom background pattern and flexbox for centering. This setup is inherently responsive.
@@ -131,7 +156,7 @@ export default function Login() {
         </div>
 
         {/* Form - Shadcn style */}
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-900 dark:text-zinc-50">
               Email

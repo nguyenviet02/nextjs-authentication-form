@@ -1,5 +1,5 @@
 'use client';
-import signUp from '@/services/auth';
+import { signUp } from '@/services/auth';
 import Link from 'next/link';
 import React, { useState, useRef } from 'react';
 import { toast } from 'sonner';
@@ -132,7 +132,7 @@ const SignUpForm: React.FC = () => {
     toast.loading('Signing up...');
     try {
       const res = await signUp(fullName, email, password);
-      if (!res || res.status !== 200) {
+      if (!res.success) {
         toast.dismiss();
         toast.error(res.message);
         return;
