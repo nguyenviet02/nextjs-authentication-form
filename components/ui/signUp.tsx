@@ -1,6 +1,8 @@
 'use client';
+import signUp from '@/services/auth';
 import Link from 'next/link';
 import React, { useState, useRef } from 'react';
+import { toast } from 'sonner';
 
 const UserIcon: React.FC = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -106,7 +108,7 @@ const FloatingLabelInput: React.FC<{
 };
 
 // Main Component with shadcn/ui styling
-const SigninForm: React.FC = () => {
+const SignUpForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -116,6 +118,33 @@ const SigninForm: React.FC = () => {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const resetForm = () => {
+    setShowPassword(false);
+    setEmail('');
+    setPassword('');
+    setFullName('');
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    toast.loading('Signing up...');
+    try {
+      const res = await signUp(fullName, email, password);
+      if (!res || res.status !== 200) {
+        toast.dismiss();
+        toast.error(res.message);
+        return;
+      }
+      toast.dismiss();
+      toast.success('Sign up successful');
+      resetForm();
+    } catch (error) {
+      console.error(error);
+      toast.dismiss();
+      toast.error(error as string);
+    }
   };
 
   return (
@@ -130,7 +159,7 @@ const SigninForm: React.FC = () => {
               <p className="text-sm text-muted-foreground">Enter your details below to create your account</p>
             </div>
 
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Full Name Input */}
               <div className="space-y-2">
                 <FloatingLabelInput id="fullName" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Name" icon={<UserIcon />} />
@@ -208,4 +237,4 @@ const SigninForm: React.FC = () => {
   );
 };
 
-export default SigninForm;
+export default SignUpForm;
